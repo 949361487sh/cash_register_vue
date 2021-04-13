@@ -503,6 +503,7 @@ export default {
           if (res.code === 0) {
             this.msgSuccess("会员查询成功");
             this.memberFrom = res.data;
+            console.log(111111111111);
             this.memberBox = false;
             this.isMember = false;
             this.memberInput = "";
