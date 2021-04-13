@@ -32,6 +32,7 @@ module.exports = {
   devServer: {
     port: port,
     open: true,
+    hot: true,
     proxy: {
       '/dev-api': {
         // target: `http://34n74242e4.wicp.vip`,

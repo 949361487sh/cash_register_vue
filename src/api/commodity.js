@@ -49,3 +49,17 @@ export function delStock(data) {
     data
   })
 }
+export function searchStockAdd(data) {
+  return request({
+    url: '/commodity/searchStockAdd',
+    method: 'post',
+    data
+  })
+}
+export function addMember(data) {
+  return request({
+    url: '/cashRegister/addMember',
+    method: 'post',
+    data
+  })
+}

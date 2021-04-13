@@ -47,7 +47,7 @@
             <el-table :data="selectShopingList" style="width: 100%">
               <el-table-column type="index" width="20"> </el-table-column>
               <el-table-column
-                prop="name"
+                prop="commodityTitle"
                 align="center"
                 label="商品名"
                 min-width="150"
@@ -57,16 +57,18 @@
                 <template slot-scope="scope">
                   <el-input-number
                     size="small"
-                    :precision="2"
                     :min="1"
                     :max="100"
                     v-model="scope.row.number"
                   ></el-input-number>
                 </template>
               </el-table-column>
-              <el-table-column align="center" prop="pic" label="价格">
+              <el-table-column align="center" prop="pic" label="价格（元）">
                 <template slot-scope="scope">
-                  {{ (scope.row.pic * scope.row.number).toFixed(2) }}
+                  <span style="color: #ff6014; font-size: 18px"
+                    >￥
+                    {{ (scope.row.retailPrice * scope.row.number).toFixed(2) }}
+                  </span>
                 </template>
               </el-table-column>
               <el-table-column align="center" label="操作" width="50">
@@ -90,7 +92,7 @@
                     >选择会员 A</el-button
                   >
                   <div v-else>
-                    <span>卡号：{{ memberFrom.card }}</span>
+                    <span>卡号：{{ memberFrom.tel }}</span>
                     <span>姓名：{{ memberFrom.name }}</span>
                     <span>积分：{{ memberFrom.integral }}</span>
                     <span class="upMember">
@@ -98,12 +100,13 @@
                         type="warning"
                         size="mini"
                         @click="selectMember"
-                        >重新选择 A</el-button
                       >
+                        重新选择 A
+                      </el-button>
                     </span>
                   </div>
-                </div></el-col
-              >
+                </div>
+              </el-col>
               <el-col :span="12"
                 ><div class="bottomRight">
                   <p>优惠：￥ {{ discount.toFixed(2) }}</p>
@@ -113,28 +116,17 @@
                       AddReceivablePic.toFixed(2)
                     }}</span>
                   </p>
-                </div></el-col
-              >
+                </div>
+              </el-col>
             </el-row>
           </div>
         </div>
+        <div class="settlement">
+          <el-button type="primary">收款 Space</el-button>
+          <el-button type="success">现金 Z</el-button>
+        </div>
       </el-col>
       <el-col :span="15">
-        <div class="lookupCommodity">
-          <el-tabs
-            v-model="onCommodityType"
-            type="border-card"
-            @tab-click="handleCommodityType"
-          >
-            <el-tab-pane
-              :label="item.type"
-              :name="item.value"
-              v-for="item in commodityTypeList"
-              :key="item.id"
-            >
-            </el-tab-pane>
-          </el-tabs>
-        </div>
         <div style="margin: 5px">
           <el-input
             placeholder="请输入条形码、商品名称进行查询！Tab"
@@ -144,29 +136,44 @@
           >
             <div slot="prepend">组合查询</div>
             <el-button
+              @click="addSearch"
               slot="append"
               type="primary"
               style="background: #1e77cb; color: #fff"
-              >查询 Enter</el-button
+              >查询 Tab</el-button
             >
           </el-input>
         </div>
-        <div class="goodsDetail">
+        <div
+          class="goodsDetail"
+          :style="{ height: this.bodyHeight + 40 + 'px' }"
+        >
           <el-row :gutter="10">
-            <el-col :span="4" v-for="(o, index) in 10" :key="o">
-              <el-card :body-style="{ padding: '0px' }">
-                <img
-                  src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
-                  class="image"
-                />
-                <div style="padding: 14px">
-                  <span>好吃的汉堡</span>
-                  <div class="bottom clearfix">
-                    <time class="time">{{ currentDate }}</time>
-                    <el-button type="text" class="button">操作按钮</el-button>
+            <el-col
+              :span="4"
+              v-for="(item, stockIndex) in stockData"
+              :key="stockIndex"
+            >
+              <div @click="addShopingList(item)">
+                <el-card :body-style="{ padding: '0px' }">
+                  <div
+                    class="image"
+                    :style="{
+                      backgroundImage: `url(http://127.0.0.1:7001/public/uploadFile/${item.imgUrl})`,
+                    }"
+                  >
+                    {{ item.imgUrl ? "" : "暂无图片" }}
                   </div>
-                </div>
-              </el-card>
+                  <div style="padding: 14px">
+                    <span>{{ item.commodityTitle }}</span>
+                    <div class="bottom clearfix">
+                      <time class="time stockTxt"
+                        >单价：{{ item.retailPrice }}￥</time
+                      >
+                    </div>
+                  </div>
+                </el-card>
+              </div>
             </el-col>
           </el-row>
         </div>
@@ -193,8 +200,11 @@
           >
         </el-row>
         <div class="memberCon">
-          <div style="margin-top: 15px">
-            <el-input placeholder="请输入内容" v-model="memberInput">
+          <div style="margin-top: 15px" v-if="!isTabMember">
+            <el-input
+              placeholder="请输入手机号按 Enter 查询"
+              v-model="memberInput"
+            >
               <el-button
                 slot="append"
                 icon="el-icon-search"
@@ -211,6 +221,53 @@
               ></calculation>
             </div>
           </div>
+
+          <!-- 注册会员表单 -->
+          <div v-else>
+            <el-form
+              :model="addMemberForm"
+              :rules="addMemberRules"
+              ref="addMemberForm"
+              label-width="100px"
+              class="demo-ruleForm"
+            >
+              <el-form-item label="会员姓名" prop="name">
+                <el-input v-model="addMemberForm.name"></el-input>
+              </el-form-item>
+              <el-form-item label="会员手机号" prop="tel">
+                <el-input v-model="addMemberForm.tel"></el-input>
+              </el-form-item>
+              <el-form-item label="会员生日">
+                <el-date-picker
+                  v-model="addMemberForm.birthday"
+                  type="date"
+                  format="yyyy-MM-dd"
+                  value-format="yyyy-MM-dd"
+                  placeholder="选择日期"
+                >
+                </el-date-picker>
+              </el-form-item>
+              <el-form-item label="会员地址">
+                <el-input v-model="addMemberForm.address"></el-input>
+              </el-form-item>
+              <el-form-item label="会员性别">
+                <el-radio-group v-model="addMemberForm.sex">
+                  <el-radio label="男生"></el-radio>
+                  <el-radio label="女生"></el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item>
+                <el-button
+                  type="primary"
+                  @click="addMemberSubmitForm('addMemberForm')"
+                  >立即创建</el-button
+                >
+                <el-button @click="addMemberResetForm('addMemberForm')"
+                  >重置</el-button
+                >
+              </el-form-item>
+            </el-form>
+          </div>
         </div>
       </div>
       <!--
@@ -224,7 +281,12 @@
 import { mapGetters } from "vuex";
 import calculation from "@/components/calculation";
 import { getMember } from "@/api/member";
-import { getType, searchStock } from "@/api/commodity";
+import {
+  getType,
+  searchStock,
+  searchStockAdd,
+  addMember,
+} from "@/api/commodity";
 export default {
   name: "Dashboard",
   components: {
@@ -242,17 +304,17 @@ export default {
           // 如果是会员 则用会员价计算
           pic += item.number * item.memberPic;
           // 计算优惠金额
-          this.discount += item.pic - item.memberPic;
+          this.discount += item.retailPrice - item.memberPic;
         } else {
-          pic += item.number * item.pic;
+          pic += item.number * item.retailPrice;
         }
       });
       return pic;
     },
   },
   created() {
-    this.bodyHeight = document.body.clientHeight;
-    this.bodyHeight = this.bodyHeight - 160;
+    const documentHeight = document.body.clientHeight;
+    this.bodyHeight = documentHeight - 160;
     const _this = this;
     document.onkeydown = function (e) {
       let key = window.event.key;
@@ -267,6 +329,24 @@ export default {
       if (key == "Escape") {
         // 关闭会员信息弹框
         _this.memberBox = false;
+        // 关闭会员注册弹框
+        _this.isTabMember = false;
+      }
+
+      // 在没打开会员弹框的时候才能查询商品
+      if (key == "Tab") {
+        // 会员注册快捷键
+        if (_this.memberBox) {
+          _this.isTabMember = true;
+        } else {
+          // 查询商品
+          _this.addSearch();
+        }
+      }
+
+      if (key == " ") {
+        // 结算
+        _this.addSearch();
       }
       if (key == "F3") {
         // 跳转
@@ -289,6 +369,20 @@ export default {
   },
   data() {
     return {
+      isTabMember: false, // 是否注册会员
+      addMemberForm: {
+        name: "", // 姓名
+        tel: "", // 电话
+        birthday: null, // 生日
+        address: "", // 地址
+        sex: "男生",
+      },
+      addMemberRules: {
+        name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
+        tel: [{ required: true, message: "请输入手机号", trigger: "blur" }],
+      },
+      tableLoading: true,
+      stockData: [], // 商品列表
       inquiryGoods: "", // 查询商品
       onCommodityType: "1", // 商品分类选中值
       commodityTypeList: [], // 商品分类数组
@@ -312,20 +406,73 @@ export default {
     };
   },
   methods: {
+    addMemberSubmitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          addMember(this.addMemberForm).then((res) => {
+            if (res.code == 0) {
+              this.msgSuccess(res.message);
+              this.addMemberResetForm();
+              this.isTabMember = false;
+            }
+          });
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+    addMemberResetForm(formName) {
+      this.addMemberForm = {
+        name: "", // 姓名
+        tel: "", // 电话
+        birthday: null, // 生日
+        address: "", // 地址
+        sex: "男生",
+      };
+    },
+    addSearch() {
+      searchStockAdd({
+        code: this.inquiryGoods,
+        commodityTitle: this.inquiryGoods,
+      }).then((res) => {
+        if (res.code == 0) {
+          res.data.map((item) => {
+            item.number = 1;
+          });
+          this.stockData = res.data;
+          this.inquiryGoods = "";
+        }
+      });
+    },
+    async addShopingList(item) {
+      let is = 0; // 判断是否已经添加 0没有 1已经有
+      await this.selectShopingList.map((map) => {
+        if (item.id == map.id) {
+          is = 1;
+          map.number++;
+        }
+      });
+      if (is == 0) {
+        this.selectShopingList.push(item);
+      }
+    },
     getStockList() {
       this.tableLoading = true;
       searchStock({
-        pageNo: this.pageNo,
-        pageSize: this.pageSize,
-        commodityTitle: this.searchFrom.commodityTitle,
-        termOfValidityEnd: this.searchFrom.termOfValidityEnd,
-        termOfValidityStart: this.searchFrom.termOfValidityStart,
-        isDelete: this.searchFrom.isDelete,
+        pageNo: 1,
+        pageSize: 1000000,
+        commodityTitle: "",
+        termOfValidityStart: 0,
+        termOfValidityEnd: 500000,
+        isDelete: "0",
       })
         .then((res) => {
           if (res.code == 0) {
+            res.data.map((item) => {
+              item.number = 1;
+            });
             this.stockData = res.data;
-            this.total = res.total;
           }
           this.tableLoading = false;
         })
@@ -347,11 +494,15 @@ export default {
       this.memberInput = res;
     },
     _Enter(res) {
+      if (res == "") {
+        this.msgError("请输入手机号查询");
+        return;
+      }
       getMember({ val: res })
         .then((res) => {
           if (res.code === 0) {
+            this.msgSuccess("会员查询成功");
             this.memberFrom = res.data;
-            console.log(res.data);
             this.memberBox = false;
             this.isMember = false;
             this.memberInput = "";
@@ -424,6 +575,7 @@ export default {
     background-color: #fff;
     position: absolute;
     bottom: 0;
+    z-index: 9;
     left: 0;
     width: 100%;
     height: 110px;
@@ -491,9 +643,39 @@ export default {
   }
 }
 .goodsDetail {
+  overflow: scroll;
+  ::-webkit-scrollbar {
+    /*滚动条整体样式*/
+    width: 10px; /*高宽分别对应横竖滚动条的尺寸*/
+    height: 1px;
+  }
+  ::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius: 10px;
+    background-color: skyblue;
+    background-image: -webkit-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.2) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.2) 75%,
+      transparent 75%,
+      transparent
+    );
+  }
+  ::-webkit-scrollbar-track {
+    /*滚动条里面轨道*/
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    background: #ededed;
+    border-radius: 10px;
+  }
+  .el-col {
+    margin-bottom: 20px;
+  }
   time {
-    font-size: 13px;
-    color: #999;
+    font-size: 16px;
+    color: #ff6014;
   }
 
   .bottom {
@@ -508,7 +690,13 @@ export default {
 
   .image {
     width: 100%;
+    background-size: cover;
     display: block;
+    height: 100px;
+    cursor: pointer;
+    background-color: rgb(233, 233, 233);
+    line-height: 100px;
+    text-align: center;
   }
 
   .clearfix:before,
@@ -520,5 +708,8 @@ export default {
   .clearfix:after {
     clear: both;
   }
+}
+.settlement {
+  margin: 10px;
 }
 </style>
