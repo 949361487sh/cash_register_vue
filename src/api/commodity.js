@@ -63,3 +63,24 @@ export function addMember(data) {
     data
   })
 }
+export function newOrders(data) {
+  return request({
+    url: '/commodity/newOrders',
+    method: 'post',
+    data
+  })
+}
+export function searchOderNumber(data) {
+  return request({
+    url: '/commodity/searchOderNumber',
+    method: 'post',
+    data
+  })
+}
+export function searchOderNumberStock(data) {
+  return request({
+    url: '/commodity/searchOderNumberStock',
+    method: 'post',
+    data
+  })
+}

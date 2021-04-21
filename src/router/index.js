@@ -100,7 +100,28 @@ export const constantRoutes = [
       }
     ]
   },
-
+  {
+    path: '/member',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'MemberIndex',
+        component: () => import('@/views/member/index')
+      }
+    ]
+  },
+  {
+    path: '/orderQuery',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'OrderQuery',
+        component: () => import('@/views/orderQuery/orderQuery')
+      }
+    ]
+  },
   {
     path: 'external-link',
     component: Layout,

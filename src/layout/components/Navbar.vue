@@ -5,7 +5,7 @@
         ><div
           class="topNav"
           @click="toPage('/')"
-          :class="navUrl == '/' ? 'onTopNav' : ''"
+          :class="navUrl == '/' || navUrl == '/dashboard' ? 'onTopNav' : ''"
         >
           收银台 F1
         </div></el-col
@@ -13,7 +13,8 @@
       <el-col :span="4"
         ><div
           class="topNav"
-          :class="navUrl == '/transaction/index' ? 'onTopNav' : ''"
+          @click="toPage('/orderQuery/index')"
+          :class="navUrl == '/orderQuery/index' ? 'onTopNav' : ''"
         >
           交易查询 F2
         </div></el-col
@@ -30,8 +31,8 @@
       <el-col :span="4"
         ><div
           class="topNav"
-          @click="toPage('/memberManagement/index')"
-          :class="navUrl == '/memberManagement/index' ? 'onTopNav' : ''"
+          @click="toPage('/member/index')"
+          :class="navUrl == '/member/index' ? 'onTopNav' : ''"
         >
           会员管理 F4
         </div></el-col
@@ -61,6 +62,16 @@ export default {
     return {
       navUrl: "/",
     };
+  },
+  created() {
+    this.navUrl = this.$route.path;
+    console.log(this.$route.path);
+  },
+  watch: {
+    $route(to, from) {
+      console.log(to.path, "地址栏变化");
+      this.navUrl = to.path;
+    },
   },
   methods: {
     toPage(url) {

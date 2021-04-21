@@ -5,7 +5,7 @@
         <div class="selectCommodity" :style="{ height: bodyHeight + 'px' }">
           <div class="top">
             <span class="topName blod"> 客单 </span>
-            <span class="topOdd blod">{{ oddNumbers }}</span>
+            <span class="topOdd blod">{{ nowOderNumber }}</span>
             <span class="topSelect">已选 {{ selectShopingList.length }}</span>
           </div>
           <div class="oldBox" v-if="isOld">
@@ -25,9 +25,23 @@
                 <el-row :gutter="5">
                   <el-col :span="12"
                     ><div class="oldBoxConLeft">
-                      <p><span>应收金额：</span>{{ oldFrom.receivablePic }}</p>
-                      <p><span>实收金额：</span>{{ oldFrom.netReceipts }}</p>
-                      <p><span>找零：</span>{{ oldFrom.giveChange }}</p>
+                      <p>
+                        <span>商品金额：</span><b>{{ oldFrom.allPic }}</b> 元
+                      </p>
+                      <p>
+                        <span>优惠金额：</span><b>{{ oldFrom.discount }}</b> 元
+                      </p>
+                      <p>
+                        <span>应收金额：</span
+                        ><b>{{ oldFrom.addReceivablePic }}</b> 元
+                      </p>
+                      <p>
+                        <span>实收金额：</span
+                        ><b>{{ oldFrom.receiptsPic }}</b> 元
+                      </p>
+                      <p>
+                        <span>找零：</span><b>{{ oldFrom.giveChange }}</b> 元
+                      </p>
                     </div></el-col
                   >
                   <el-col :span="12"
@@ -41,6 +55,7 @@
             </el-card>
           </div>
           <div
+            v-else
             class="selectShopingCon"
             :style="{ height: bodyHeight - 110 + 'px' }"
           >
@@ -113,7 +128,7 @@
                   <p>
                     应收： <span style="color: #ff6014">￥</span>
                     <span style="color: #ff6014; font-size: 22px">{{
-                      AddReceivablePic.toFixed(2)
+                      addReceivablePic.toFixed(2)
                     }}</span>
                   </p>
                 </div>
@@ -190,17 +205,19 @@
           >
           <el-col :span="8"
             ><div class="memberTopText" style="text-align: center">
-              选择会员
+              <span v-if="isTabMember == 0">选择会员</span>
+              <span v-if="isTabMember == 1">注册会员</span>
+              <span v-if="isTabMember == 2">收款</span>
             </div></el-col
           >
-          <el-col :span="8"
+          <el-col :span="8" v-if="isTabMember == 0"
             ><div class="memberTopText" style="text-align: right">
               注册会员 Tab
             </div></el-col
           >
         </el-row>
         <div class="memberCon">
-          <div style="margin-top: 15px" v-if="!isTabMember">
+          <div style="margin-top: 15px" v-if="isTabMember == 0">
             <el-input
               placeholder="请输入手机号按 Enter 查询"
               v-model="memberInput"
@@ -223,50 +240,100 @@
           </div>
 
           <!-- 注册会员表单 -->
-          <div v-else>
-            <el-form
-              :model="addMemberForm"
-              :rules="addMemberRules"
-              ref="addMemberForm"
-              label-width="100px"
-              class="demo-ruleForm"
-            >
-              <el-form-item label="会员姓名" prop="name">
-                <el-input v-model="addMemberForm.name"></el-input>
-              </el-form-item>
-              <el-form-item label="会员手机号" prop="tel">
-                <el-input v-model="addMemberForm.tel"></el-input>
-              </el-form-item>
-              <el-form-item label="会员生日">
-                <el-date-picker
-                  v-model="addMemberForm.birthday"
-                  type="date"
-                  format="yyyy-MM-dd"
-                  value-format="yyyy-MM-dd"
-                  placeholder="选择日期"
-                >
-                </el-date-picker>
-              </el-form-item>
-              <el-form-item label="会员地址">
-                <el-input v-model="addMemberForm.address"></el-input>
-              </el-form-item>
-              <el-form-item label="会员性别">
-                <el-radio-group v-model="addMemberForm.sex">
-                  <el-radio label="男生"></el-radio>
-                  <el-radio label="女生"></el-radio>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item>
-                <el-button
-                  type="primary"
-                  @click="addMemberSubmitForm('addMemberForm')"
-                  >立即创建</el-button
-                >
-                <el-button @click="addMemberResetForm('addMemberForm')"
-                  >重置</el-button
-                >
-              </el-form-item>
-            </el-form>
+          <div v-if="isTabMember == 1">
+            <member @addMember="addMemberSuccse" />
+          </div>
+          <div v-if="isTabMember == 2">
+            <el-divider content-position="left">
+              <span class="titleStyle">订单明细</span>
+            </el-divider>
+            <div class="collection">
+              <div class="collectionOrder borderDashed">
+                <el-row>
+                  <el-col :span="6"> <div>订单金额</div> </el-col>
+                  <el-col :span="10">
+                    <div style="color: #909090">
+                      ￥{{ addReceivablePic.toFixed(2) }}
+                    </div>
+                  </el-col>
+                  <el-col :span="4"> <div>商品数</div> </el-col>
+                  <el-col :span="1">
+                    <div style="color: #909090">
+                      {{ selectShopingList.length }}
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+              <div class="collectionOrder">
+                <el-row>
+                  <el-col :span="6"> <div>优惠小计</div> </el-col>
+                  <el-col :span="10">
+                    <div style="color: #909090">
+                      ￥{{ discount.toFixed(2) }}
+                    </div>
+                  </el-col>
+                </el-row>
+                <el-row style="padding-top: 20px">
+                  <el-col :span="6"> <div>应收金额</div> </el-col>
+                  <el-col :span="10">
+                    <div
+                      style="color: #000; font-size: 24px; font-weight: bold"
+                    >
+                      ￥{{ addReceivablePic.toFixed(2) }}
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+            <div class="collection">
+              <div class="collectionOrder">
+                <el-row style="padding-top: 20px">
+                  <el-col :span="6"> <div>未收金额</div> </el-col>
+                  <el-col :span="10">
+                    <div
+                      style="color: #ff6014; font-size: 28px; font-weight: bold"
+                    >
+                      ￥{{ addReceivablePic.toFixed(2) }}
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </div>
+            <el-divider content-position="left">
+              <span class="titleStyle">选择付款方式</span>
+            </el-divider>
+            <div class="paymentStyle">
+              <span>现金 Z</span>
+              <span>微信 X</span>
+              <span>支付宝 C</span>
+            </div>
+          </div>
+          <!-- 现金支付 -->
+          <div style="margin-top: 15px" v-if="isTabMember == 3">
+            <div class="settlementInput">
+              <el-row>
+                <el-col :span="19"> <span>实收金额</span> </el-col>
+                <el-col :span="5">
+                  <b>{{ receiptsPic }}</b>
+                </el-col>
+              </el-row>
+            </div>
+            <el-row class="settlementCon">
+              <el-col :span="19"> 本次收款 </el-col>
+              <el-col :span="5"> ￥{{ addReceivablePic.toFixed(2) }} </el-col>
+            </el-row>
+            <el-row class="settlementCon">
+              <el-col :span="19"> 找零 </el-col>
+              <el-col :span="5"> ￥{{ giveChange.toFixed(2) }} </el-col>
+            </el-row>
+            <div>
+              <calculation
+                v-if="memberBox"
+                @confirmEvent="_confirmEvent_settlement"
+                :keyValue="onKeyCode_settlement"
+                @Enter="_Enter_settlement"
+              ></calculation>
+            </div>
           </div>
         </div>
       </div>
@@ -280,21 +347,32 @@
 <script>
 import { mapGetters } from "vuex";
 import calculation from "@/components/calculation";
+import member from "@/components/addMember/index.vue";
 import { getMember } from "@/api/member";
 import {
   getType,
   searchStock,
   searchStockAdd,
   addMember,
+  newOrders,
+  searchOderNumber,
 } from "@/api/commodity";
+import onKey from "@/components/onKey/index.js";
 export default {
   name: "Dashboard",
   components: {
+    member,
     calculation,
   },
+  mixins: [onKey],
   computed: {
     ...mapGetters(["name"]),
-    AddReceivablePic() {
+    giveChange() {
+      return this.receiptsPic - this.addReceivablePic >= 0
+        ? this.receiptsPic - this.addReceivablePic
+        : 0;
+    },
+    addReceivablePic() {
       // 所有商品应收相加
       let pic = 0;
       // eslint-disable-next-line vue/no-side-effects-in-computed-properties
@@ -309,53 +387,17 @@ export default {
           pic += item.number * item.retailPrice;
         }
       });
+      this.receiptsPic = pic;
       return pic;
     },
   },
   created() {
+    searchOderNumber({ orderNumber: "20210416111146" }).then((res) => {
+      console.log(res);
+    });
     const documentHeight = document.body.clientHeight;
     this.bodyHeight = documentHeight - 160;
-    const _this = this;
-    document.onkeydown = function (e) {
-      let key = window.event.key;
-      console.log(key);
-      // 给会员信息组件传值 加上时间和随机数来触发组件watch
-      _this.onKeyCode =
-        key + "&&&" + new Date() + Math.floor(Math.random() * 1000000);
-      if (key == "a") {
-        // 打开会员信息弹框
-        _this.selectMember();
-      }
-      if (key == "Escape") {
-        // 关闭会员信息弹框
-        _this.memberBox = false;
-        // 关闭会员注册弹框
-        _this.isTabMember = false;
-      }
 
-      // 在没打开会员弹框的时候才能查询商品
-      if (key == "Tab") {
-        // 会员注册快捷键
-        if (_this.memberBox) {
-          _this.isTabMember = true;
-        } else {
-          // 查询商品
-          _this.addSearch();
-        }
-      }
-
-      if (key == " ") {
-        // 结算
-        _this.addSearch();
-      }
-      if (key == "F3") {
-        // 跳转
-        _this.$router.push({
-          path: "/warehouse/index",
-        });
-        window.event.returnValue = false;
-      }
-    };
     getType().then((res) => {
       if (res.code == 0) {
         res.data.forEach((item) => {
@@ -367,27 +409,20 @@ export default {
     });
     this.getStockList();
     this.scanCode();
+    this.nowOderNumber = this.getNowOderNumber();
   },
   data() {
     return {
-      isTabMember: false, // 是否注册会员
-      addMemberForm: {
-        name: "", // 姓名
-        tel: "", // 电话
-        birthday: null, // 生日
-        address: "", // 地址
-        sex: "男生",
-      },
-      addMemberRules: {
-        name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
-        tel: [{ required: true, message: "请输入手机号", trigger: "blur" }],
-      },
+      nowOderNumber: 0,
+      receiptsPic: 0, // 实收金额
+      isTabMember: 0, // 0=查询会员 1=新增会员 2=结算 3=现金结算
       tableLoading: true,
       stockData: [], // 商品列表
       inquiryGoods: "", // 查询商品
       onCommodityType: "1", // 商品分类选中值
       commodityTypeList: [], // 商品分类数组
       onKeyCode: "",
+      onKeyCode_settlement: "",
       isMember: true, // 是否选择了会员
       memberBox: false, // 会员查询输入框
       selectShopingList: [],
@@ -407,12 +442,23 @@ export default {
     };
   },
   methods: {
+    getNowOderNumber() {
+      return this.$moment(this.createTime).format("YYYYMMDDHHmmss");
+    },
+    voiceAnnouncements(str) {
+      const msg = new SpeechSynthesisUtterance();
+      msg.text = str;
+      msg.rate = 1;
+      msg.pitch = 2;
+      window.speechSynthesis.speak(msg);
+    },
     scanCode() {
       let code = "";
       let lastTime, nextTime;
       let lastCode, nextCode;
       let that = this;
       window.document.onkeypress = function (e) {
+        if (that.isMember) return;
         console.log("111111");
         if (window.event) {
           // IE
@@ -422,12 +468,11 @@ export default {
           nextCode = e.which;
         }
         if (e.which === 13) {
-          debugger;
           if (code.length < 3) return; // 手动输入的时间不会让code的长度大于2，所以这里只会对扫码枪有
           console.log(code);
           console.log("扫码结束");
           that.inquiryGoods = code;
-          that.addSearch('扫码')
+          that.addSearch("扫码");
           // that.distinguishCode(code) // 获取到扫码枪输入的内容，做别的操作
           code = "";
           lastCode = "";
@@ -452,30 +497,8 @@ export default {
         lastTime = nextTime;
       };
     },
-    addMemberSubmitForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          addMember(this.addMemberForm).then((res) => {
-            if (res.code == 0) {
-              this.msgSuccess(res.message);
-              this.addMemberResetForm();
-              this.isTabMember = false;
-            }
-          });
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-    },
-    addMemberResetForm(formName) {
-      this.addMemberForm = {
-        name: "", // 姓名
-        tel: "", // 电话
-        birthday: null, // 生日
-        address: "", // 地址
-        sex: "男生",
-      };
+    addMemberSuccse() {
+      this.isTabMember = 0;
     },
     addSearch(type) {
       searchStockAdd({
@@ -483,19 +506,16 @@ export default {
         commodityTitle: this.inquiryGoods,
       }).then((res) => {
         if (res.code == 0) {
-          
           res.data.map((item) => {
             item.number = 1;
           });
           this.stockData = res.data;
-          
-          if(type === '扫码'){
-            this.addShopingList(res.data[0])
-          }else{
+
+          if (type === "扫码") {
+            this.addShopingList(res.data[0]);
+          } else {
             this.inquiryGoods = "";
-            }
-          
-          
+          }
         }
       });
     },
@@ -510,6 +530,7 @@ export default {
       if (is == 0) {
         this.selectShopingList.push(item);
       }
+      this.isOld = false;
     },
     getStockList() {
       this.tableLoading = true;
@@ -547,6 +568,11 @@ export default {
     _confirmEvent(res) {
       this.memberInput = res;
     },
+    _confirmEvent_settlement(res) {
+      console.log(res, "_confirmEvent_settlement");
+      console.log(this.inquiryGoods, "搜索值_confirmEvent_settlement");
+      this.receiptsPic = res;
+    },
     _Enter(res) {
       if (res == "") {
         this.msgError("请输入手机号查询");
@@ -566,6 +592,39 @@ export default {
         .catch((err) => {
           this.memberFrom = {};
         });
+    },
+    _Enter_settlement(res) {
+      console.log(res);
+      console.log(this.inquiryGoods, "搜索值_Enter_settlement");
+      this.voiceAnnouncements(
+        `现金收款 ${this.receiptsPic} 元 ,找零${this.giveChange} 元。`
+      );
+      this.oldOddNumbers = this.nowOderNumber;
+      let commodityIds = [];
+      this.selectShopingList.forEach((res) => {
+        commodityIds.push(res.id);
+      });
+      newOrders({
+        addReceivablePic: this.addReceivablePic,
+        receiptsPic: this.receiptsPic,
+        giveChange: this.giveChange,
+        orderNumber: this.nowOderNumber,
+        discount: this.discount,
+        allPic: parseFloat(this.addReceivablePic + this.discount),
+        commodityIds: commodityIds.join(","),
+        memberName: this.memberFrom.name,
+      }).then((res) => {
+        if (res.code == 0) {
+          this.inquiryGoods = "";
+          this.addSearch();
+          this.oldFrom = res.data[0];
+          this.nowOderNumber = this.getNowOderNumber();
+          this.memberBox = false;
+          this.selectShopingList = [];
+          this.isOld = true;
+          this.msgSuccess("支付成功");
+        }
+      });
     },
   },
 };
@@ -613,6 +672,10 @@ export default {
         width: 80px;
         display: inline-block;
         text-align: right;
+      }
+      b {
+        color: #ff6014;
+        font-size: 18px;
       }
     }
     .oldBoxConRight {
@@ -665,38 +728,7 @@ export default {
     }
   }
 }
-.member {
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background-color: #dddddd;
-  z-index: 999;
-  .memberTop {
-    background-color: #1e77cb;
-    line-height: 60px;
-    .memberTopText {
-      padding: 0px 15px;
-      color: #fff;
-      font-weight: bold;
-      font-size: 16px;
-    }
-  }
-  .memberCon {
-    width: 40%;
-    margin: 0px auto;
-    background-color: #fff;
-    height: 100%;
-    padding: 15px 10px;
-    position: relative;
-    .memberInputSearch {
-      background-color: #1e77cb;
-      color: #fff;
-      border: none;
-    }
-  }
-}
+
 .goodsDetail {
   overflow: scroll;
   ::-webkit-scrollbar {
@@ -766,5 +798,18 @@ export default {
 }
 .settlement {
   margin: 10px;
+}
+.settlementCon {
+  padding: 20px 25px;
+}
+.settlementInput {
+  border: 1px solid rgb(204, 203, 203);
+  padding: 15px;
+  span {
+    color: #4e99df;
+  }
+  b {
+    font-size: 24px;
+  }
 }
 </style>
