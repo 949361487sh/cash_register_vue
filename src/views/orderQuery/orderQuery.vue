@@ -15,6 +15,12 @@
           clearable
         ></el-input>
       </el-form-item>
+      <el-form-item label="订单状态">
+        <el-select v-model="orderQueryForm.refund" placeholder="请选择订单状态">
+          <el-option label="正常" value="0"></el-option>
+          <el-option label="退款" value="1"></el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="订单日期">
         <el-date-picker
           v-model="orderQueryForm.time"
@@ -34,14 +40,13 @@
       </el-form-item>
     </el-form>
 
-    <el-table :data="orderTable" border style="width: 100%">
-      <el-table-column
-        fixed="left"
-        type="index"
-        :index="orderIndexMethod"
-        width="50"
-        label="序列"
-      >
+    <el-table
+      :data="orderTable"
+      border
+      style="width: 100%"
+      :row-class-name="orderClassName"
+    >
+      <el-table-column fixed="left" type="index" width="50" label="序列">
       </el-table-column>
       <el-table-column prop="orderNumber" label="订单号" min-width="180">
       </el-table-column>
@@ -65,15 +70,26 @@
       </el-table-column>
       <el-table-column prop="memberName" label="会员名字" min-width="100">
       </el-table-column>
-      <el-table-column prop="createTime" label="创建时间" min-width="100">
+      <el-table-column prop="createTime" label="创建时间" min-width="150">
         <template slot-scope="scope">{{
           scope.row.createTime | datefmt
         }}</template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作" width="100">
+      <el-table-column prop="createTime" label="修改时间" min-width="150">
+        <template slot-scope="scope">{{
+          scope.row.updateTime | datefmt
+        }}</template>
+      </el-table-column>
+      <el-table-column fixed="right" label="操作" width="180">
         <template slot-scope="scope">
-          <el-button type="success" @click="orderDetail(scope.row)"
+          <el-button type="primary" @click="orderDetail(scope.row)"
             >详情</el-button
+          >
+          <el-button
+            type="danger"
+            v-if="scope.row.refund != '1'"
+            @click="delOrderFun(scope.row)"
+            >退款</el-button
           >
         </template>
       </el-table-column>
@@ -90,20 +106,20 @@
       >
       </el-pagination>
     </div>
-    <el-dialog title="订单详情" width="70%" :visible.sync="dialogTableVisible">
+    <el-dialog
+      title="订单详情"
+      width="70%"
+      custom-class="orderDialogName"
+      :visible.sync="dialogTableVisible"
+      :close-on-click-modal="false"
+    >
       <el-table
         :data="stockData"
         v-loading="tableLoading"
         border
         style="width: 100%"
       >
-        <el-table-column
-          fixed="left"
-          type="index"
-          :index="indexMethod"
-          width="50"
-          label="序列"
-        >
+        <el-table-column type="index" fixed="left" label="序号" width="50">
         </el-table-column>
         <el-table-column fixed="left" label="商品名称" width="150">
           <template slot-scope="scope">{{ scope.row.commodityTitle }}</template>
@@ -234,18 +250,6 @@
           <template slot-scope="scope">{{ scope.row.remark }}</template>
         </el-table-column>
       </el-table>
-      <div style="margin: 30px auto 100px; text-align: center">
-        <el-pagination
-          background
-          :total="total"
-          :page-sizes="[10, 20, 30, 40, 50, 100]"
-          :current-page="pageNo"
-          @size-change="sizeChange"
-          layout="total,sizes, prev, pager, next, jumper"
-          @current-change="currentChange"
-        >
-        </el-pagination>
-      </div>
     </el-dialog>
   </div>
 </template>
@@ -254,6 +258,7 @@ import {
   searchStock,
   searchOderNumber,
   searchOderNumberStock,
+  delOrder,
 } from "@/api/commodity";
 export default {
   name: "OrderQuery",
@@ -261,9 +266,6 @@ export default {
     return {
       dialogTableVisible: false,
       orderTable: [],
-      total: 1000,
-      pageNo: 1, // 当前页数
-      pageSize: 10,
       total_order: 1000,
       pageNo_order: 1, // 当前页数
       pageSize_order: 10,
@@ -275,6 +277,7 @@ export default {
         time: "",
         memberName: "",
         orderNumber: "",
+        refund: "0", //订单状态
       },
       pickerOptions: {
         shortcuts: [
@@ -314,6 +317,33 @@ export default {
     this.getOrderTable(["2021-01-01", "2100-12-12"]);
   },
   methods: {
+    orderClassName({ row, rowIndex }) {
+      if (row.refund == "1") {
+        return "warning-row";
+      }
+      return "";
+    },
+    delOrderFun(row) {
+      this.$confirm("确定退款吗, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          delOrder({ id: row.id }).then((res) => {
+            if (res.code == 0) {
+              this.msgSuccess("退款成功");
+              this.getOrderTable();
+            }
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
+    },
     orderDetail(row) {
       searchOderNumberStock({ id: row.id }).then((res) => {
         if (res.code == 0) {
@@ -325,13 +355,14 @@ export default {
     },
     getOrderTable(time) {
       if (!time) {
-        time = ["2021-01-01", "2100-12-12"];
+        time = ["2021-01-01", "2100-12-30"];
       }
       const data = {
-        orderNumber: this.orderQueryForm.orderNumber,
-        memberName: this.orderQueryForm.memberName,
+        orderNumber: this.orderQueryForm.orderNumber.trim(),
+        memberName: this.orderQueryForm.memberName.trim(),
         timeStart: this.$moment(time[0]).format("YYYY-MM-DD"),
         timeEnd: this.$moment(time[1]).format("YYYY-MM-DD"),
+        refund: this.orderQueryForm.refund,
       };
       searchOderNumber(data).then((res) => {
         console.log(res);
@@ -341,45 +372,11 @@ export default {
         }
       });
     },
-    indexMethod(indedx) {
-      return indedx + 1 + (this.pageNo - 1) * this.pageSize;
-    },
     orderIndexMethod(indedx) {
       return indedx + 1 + (this.pageNo - 1) * this.pageSize;
     },
-    getStockList() {
-      this.tableLoading = true;
-      searchStock({
-        pageNo: this.pageNo,
-        pageSize: this.pageSize,
-        commodityTitle: "",
-        termOfValidityEnd: 1000000,
-        termOfValidityStart: 0,
-        isDelete: 0,
-      })
-        .then((res) => {
-          if (res.code == 0) {
-            this.stockData = res.data;
-            this.total = res.total;
-          }
-          this.tableLoading = false;
-        })
-        .catch((err) => {
-          this.tableLoading = false;
-        });
-    },
     sreachOrderQuery() {
       this.getOrderTable(this.orderQueryForm.time);
-    },
-    sizeChange(size) {
-      console.log(size, "改变查询总条数");
-      this.pageSize = size;
-      this.getStockList();
-    },
-    currentChange(size) {
-      console.log(size, "改变页数");
-      this.pageNo = size;
-      this.getStockList();
     },
     sizeChange_order(size) {
       console.log(size, "改变查询总条数");
@@ -394,8 +391,19 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
+.el-table .warning-row {
+  background: rgb(250, 109, 163);
+  color: #fff;
+}
+.el-table .warning-row:hover {
+  color: #000;
+}
 .orderBox {
   padding: 20px;
+}
+.orderDialogName {
+  height: 70vh;
+  overflow: auto;
 }
 </style>

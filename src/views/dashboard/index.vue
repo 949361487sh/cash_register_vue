@@ -108,7 +108,7 @@
                   >
                   <div v-else>
                     <span>卡号：{{ memberFrom.tel }}</span>
-                    <span>姓名：{{ memberFrom.name }}</span>
+                    <span>姓名：{{ memberFrom.memberName }}</span>
                     <span>积分：{{ memberFrom.integral }}</span>
                     <span class="upMember">
                       <el-button
@@ -208,6 +208,7 @@
               <span v-if="isTabMember == 0">选择会员</span>
               <span v-if="isTabMember == 1">注册会员</span>
               <span v-if="isTabMember == 2">收款</span>
+              <span v-if="isTabMember == 4">新增商品</span>
             </div></el-col
           >
           <el-col :span="8" v-if="isTabMember == 0"
@@ -216,11 +217,15 @@
             </div></el-col
           >
         </el-row>
-        <div class="memberCon">
+        <div
+          class="memberCon"
+          :style="{ width: isTabMember == 4 ? '100%' : '40%' }"
+        >
           <div style="margin-top: 15px" v-if="isTabMember == 0">
             <el-input
               placeholder="请输入手机号按 Enter 查询"
               v-model="memberInput"
+              disabled
             >
               <el-button
                 slot="append"
@@ -335,6 +340,14 @@
               ></calculation>
             </div>
           </div>
+          <!--
+
+              添加商品
+
+          -->
+          <div v-if="isTabMember == 4">
+            <warehouse @upList="upList" />
+          </div>
         </div>
       </div>
       <!--
@@ -348,6 +361,7 @@
 import { mapGetters } from "vuex";
 import calculation from "@/components/calculation";
 import member from "@/components/addMember/index.vue";
+import warehouse from "@/components/warehouse/index";
 import { getMember } from "@/api/member";
 import {
   getType,
@@ -363,6 +377,7 @@ export default {
   components: {
     member,
     calculation,
+    warehouse,
   },
   mixins: [onKey],
   computed: {
@@ -378,7 +393,7 @@ export default {
       // eslint-disable-next-line vue/no-side-effects-in-computed-properties
       this.discount = 0;
       this.selectShopingList.forEach((item) => {
-        if (this.memberFrom.name) {
+        if (this.memberFrom.memberName) {
           // 如果是会员 则用会员价计算
           pic += item.number * item.memberPic;
           // 计算优惠金额
@@ -442,14 +457,20 @@ export default {
     };
   },
   methods: {
+    upList() {
+      this.getStockList();
+      this.memberBox = false;
+      this.isTabMember = 0;
+    },
     getNowOderNumber() {
       return this.$moment(this.createTime).format("YYYYMMDDHHmmss");
     },
     voiceAnnouncements(str) {
-      const msg = new SpeechSynthesisUtterance();
-      msg.text = str;
-      msg.rate = 1;
-      msg.pitch = 2;
+      console.log(str, "执行播放");
+      const msg = new SpeechSynthesisUtterance(str);
+      // msg.text = str;
+      // msg.rate = 1;
+      // msg.pitch = 2;
       window.speechSynthesis.speak(msg);
     },
     scanCode() {
@@ -504,8 +525,16 @@ export default {
       searchStockAdd({
         code: this.inquiryGoods,
         commodityTitle: this.inquiryGoods,
+        isDelete: "0",
       }).then((res) => {
         if (res.code == 0) {
+          if (res.data.length == 0) {
+            this.msgInfo("没有该商品信息，请新增商品后在查询!");
+            // 如果没有查询出来商品，则说明可能没有该商品，则要新增商品
+            this.isTabMember = 4;
+            this.memberBox = true;
+            return;
+          }
           res.data.map((item) => {
             item.number = 1;
           });
@@ -578,7 +607,7 @@ export default {
         this.msgError("请输入手机号查询");
         return;
       }
-      getMember({ val: res })
+      getMember({ val: res, state: "0" })
         .then((res) => {
           if (res.code === 0) {
             this.msgSuccess("会员查询成功");
@@ -612,7 +641,7 @@ export default {
         discount: this.discount,
         allPic: parseFloat(this.addReceivablePic + this.discount),
         commodityIds: commodityIds.join(","),
-        memberName: this.memberFrom.name,
+        memberName: this.memberFrom.memberName,
       }).then((res) => {
         if (res.code == 0) {
           this.inquiryGoods = "";

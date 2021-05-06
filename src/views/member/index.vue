@@ -1,11 +1,18 @@
 <template>
   <div class="orderBox">
     <el-form :inline="true" :model="memberQueryForm" class="demo-form-inline">
-      <el-form-item label="活动区域">
-        <el-select v-model="memberQueryForm.state" placeholder="请选择活动区域">
+      <el-form-item label="会员状态">
+        <el-select v-model="memberQueryForm.state" placeholder="请选择会员状态">
           <el-option label="全部" value="2"></el-option>
           <el-option label="启用" value="0"></el-option>
           <el-option label="禁用" value="1"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="会员性别">
+        <el-select v-model="memberQueryForm.sex" placeholder="请选择会员性别">
+          <el-option label="全部" value="2"></el-option>
+          <el-option label="男士" value="1"></el-option>
+          <el-option label="女生" value="0"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="会员姓名">
@@ -63,6 +70,14 @@
       <el-table-column prop="tel" label="会员电话" min-width="100">
       </el-table-column>
       <el-table-column prop="sex" label="会员性别" min-width="100">
+        <template slot-scope="scope">
+          <span v-if="scope.row.sex == '0'" style="color: red"
+            ><i class="el-icon-female"></i> 女生</span
+          >
+          <span v-if="scope.row.sex == '1'" style="color: blue"
+            ><i class="el-icon-male"></i> 男生</span
+          >
+        </template>
       </el-table-column>
       <el-table-column prop="integral" label="积分" min-width="100">
       </el-table-column>
@@ -169,6 +184,7 @@ export default {
       pageSize: 10,
       tableLoading: false,
       memberQueryForm: {
+        sex: "2",
         time: "",
         name: "",
         tel: "",
@@ -253,6 +269,7 @@ export default {
         startTime: this.$moment(time[0]).format("YYYY-MM-DD"),
         endTime: this.$moment(time[1]).format("YYYY-MM-DD"),
         state: this.memberQueryForm.state,
+        sex: this.memberQueryForm.sex,
         pageSize: this.pageSize,
         pageNo: this.pageNo,
       };

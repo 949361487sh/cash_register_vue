@@ -28,8 +28,8 @@
       </el-form-item>
       <el-form-item label="会员性别">
         <el-radio-group v-model="addMemberForm.sex">
-          <el-radio label="男生"></el-radio>
-          <el-radio label="女生"></el-radio>
+          <el-radio label="1">男生</el-radio>
+          <el-radio label="0">女生</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="积分" v-if="list">
@@ -70,7 +70,7 @@ export default {
         tel: "", // 电话
         birthday: null, // 生日
         address: "", // 地址
-        sex: "男生",
+        sex: "1",
         balance: "",
         integral: "",
       },

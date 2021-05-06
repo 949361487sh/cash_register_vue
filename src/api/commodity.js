@@ -84,3 +84,10 @@ export function searchOderNumberStock(data) {
     data
   })
 }
+export function delOrder(data) {
+  return request({
+    url: '/commodity/delOrder',
+    method: 'post',
+    data
+  })
+}
