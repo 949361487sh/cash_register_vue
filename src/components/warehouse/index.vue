@@ -4,32 +4,11 @@
       :model="addWarehouseFrom"
       :rules="rules"
       :inline="true"
-      ref="addWarehouseFrom"
+      ref="addRefWarehouseFrom"
       label-width="90px"
       class="demo-addWarehouseFrom"
     >
       <el-row :gutter="20">
-        <el-col :span="6">
-          <div class="">
-            <el-form-item label="销售方式" prop="salesMethods">
-              <el-radio-group v-model="addWarehouseFrom.salesMethods">
-                <el-radio-button label="普通"></el-radio-button>
-                <el-radio-button label="称重销售"></el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </div>
-        </el-col>
-
-        <el-col :span="6">
-          <div class="">
-            <el-form-item label="是否积分" prop="isIntegral">
-              <el-radio-group v-model="addWarehouseFrom.isIntegral">
-                <el-radio-button label="是"></el-radio-button>
-                <el-radio-button label="否"></el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-          </div>
-        </el-col>
         <el-col :span="6">
           <div class="">
             <el-form-item label="商品名称" prop="commodityTitle">
@@ -47,6 +26,69 @@
                 v-model="addWarehouseFrom.code"
                 class="inputW"
               ></el-input>
+            </el-form-item>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="">
+            <el-form-item label="库存" prop="stock">
+              <el-input
+                placeholder="请输入库存"
+                class="inputW"
+                v-model="addWarehouseFrom.stock"
+                type="number"
+              ></el-input>
+            </el-form-item>
+          </div>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="6">
+          <div class="">
+            <el-form-item label="进货价" prop="buyingPrice">
+              <el-input-number
+                v-model="addWarehouseFrom.buyingPrice"
+                class="inputW"
+                :precision="2"
+                :step="0.1"
+              ></el-input-number>
+            </el-form-item>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="">
+            <el-form-item label="零售价" prop="retailPrice">
+              <el-input-number
+                v-model="addWarehouseFrom.retailPrice"
+                class="inputW"
+                :precision="2"
+                :step="0.1"
+              ></el-input-number>
+            </el-form-item>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="">
+            <el-form-item label="会员价" prop="memberPic">
+              <el-input-number
+                v-model="addWarehouseFrom.memberPic"
+                class="inputW"
+                :precision="2"
+                :step="0.1"
+              ></el-input-number>
+            </el-form-item>
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="">
+            <el-form-item label="毛利率">
+              <el-input
+                placeholder="0.00"
+                class="inputW"
+                v-model="addWarehouseFrom.grossProfitRate"
+              >
+                <template slot="append">%</template>
+              </el-input>
             </el-form-item>
           </div>
         </el-col>
@@ -139,70 +181,6 @@
       <el-row>
         <el-col :span="6">
           <div class="">
-            <el-form-item label="进货价" prop="buyingPrice">
-              <el-input-number
-                v-model="addWarehouseFrom.buyingPrice"
-                class="inputW"
-                :precision="2"
-                :step="0.1"
-              ></el-input-number>
-            </el-form-item>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="">
-            <el-form-item label="零售价" prop="retailPrice">
-              <el-input-number
-                v-model="addWarehouseFrom.retailPrice"
-                class="inputW"
-                :precision="2"
-                :step="0.1"
-              ></el-input-number>
-            </el-form-item>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="">
-            <el-form-item label="会员价" prop="memberPic">
-              <el-input-number
-                v-model="addWarehouseFrom.memberPic"
-                class="inputW"
-                :precision="2"
-                :step="0.1"
-              ></el-input-number>
-            </el-form-item>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="">
-            <el-form-item label="毛利率">
-              <el-input
-                placeholder="0.00"
-                class="inputW"
-                v-model="addWarehouseFrom.grossProfitRate"
-              >
-                <template slot="append">%</template>
-              </el-input>
-            </el-form-item>
-          </div>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="6">
-          <div class="">
-            <el-form-item label="库存" prop="stock">
-              <el-input
-                placeholder="请输入库存"
-                class="inputW"
-                v-model="addWarehouseFrom.stock"
-                type="number"
-              ></el-input>
-            </el-form-item>
-          </div>
-        </el-col>
-
-        <el-col :span="6">
-          <div class="">
             <el-form-item label="有效期" prop="termOfValidity">
               <el-input
                 placeholder="请输入有效期"
@@ -285,10 +263,14 @@
         <el-col :span="24">
           <div class="subBtn">
             <el-form-item>
-              <el-button type="primary" @click="submitForm('addWarehouseFrom')"
+              <el-button
+                type="primary"
+                @click="submitForm('addRefWarehouseFrom')"
                 >立即创建</el-button
               >
-              <el-button @click="resetForm('addWarehouseFrom')">重置</el-button>
+              <el-button @click="resetForm('addRefWarehouseFrom')"
+                >重置</el-button
+              >
             </el-form-item>
           </div>
         </el-col>
@@ -360,6 +342,8 @@ export default {
       console.log(value);
       if (!value) {
         return callback(new Error("进货价不能为0"));
+      } else {
+        callback();
       }
     };
     const validateRetailPrice = (rule, value, callback) => {
@@ -367,6 +351,7 @@ export default {
       if (!value) {
         return callback(new Error("零售价不能为0"));
       }
+      callback();
     };
     return {
       commodityUnitList: [], // 商品单位
@@ -405,9 +390,6 @@ export default {
         buyingPrice: [{ validator: validateBuyingPrice, trigger: "blur" }],
         retailPrice: [{ validator: validateRetailPrice, trigger: "blur" }],
         stock: [{ required: true, message: "请输入库存", trigger: "blur" }],
-        salesMethods: [
-          { required: true, message: "请选择销售方式", trigger: "change" },
-        ],
       },
     };
   },
@@ -458,6 +440,7 @@ export default {
       console.log(file, fileList, "onChange");
     },
     dialogSubmit() {
+      debugger;
       addType({
         className: this.commodityName,
         type: this.addCommodityType,

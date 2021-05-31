@@ -86,9 +86,12 @@
         </template>
       </el-table-column>
       <el-table-column label="库存数量" width="100">
-        <template slot-scope="scope">{{
-          scope.row.stock + " （ " + scope.row.commodityUnit + " ）"
-        }}</template>
+        <template slot-scope="scope">
+          {{ scope.row.stock }}
+          <span v-if="scope.row.commodityUnit">{{
+            "（ " + scope.row.commodityUnit + " ）"
+          }}</span>
+        </template>
       </el-table-column>
       <el-table-column label="零售价（元）" width="110">
         <template slot-scope="scope">{{
@@ -122,10 +125,10 @@
       <el-table-column label="商品分类" width="100">
         <template slot-scope="scope">{{ scope.row.commodityType }}</template>
       </el-table-column>
-      <el-table-column label="商品单位" width="80">
+      <!-- <el-table-column label="商品单位" width="80">
         <template slot-scope="scope">{{ scope.row.commodityUnit }}</template>
-      </el-table-column>
-      <el-table-column
+      </el-table-column> -->
+      <!-- <el-table-column
         label="参与积分"
         :filters="[
           { text: '是', value: '是' },
@@ -141,7 +144,7 @@
             >{{ scope.row.isIntegral }}</el-tag
           ></template
         >
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="供货商" width="100">
         <template slot-scope="scope">{{ scope.row.supplier }}</template>
       </el-table-column>

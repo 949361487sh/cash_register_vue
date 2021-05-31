@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-row>
-      <el-col :span="9">
+      <el-col :span="24">
         <div class="selectCommodity" :style="{ height: bodyHeight + 'px' }">
           <div class="top">
             <span class="topName blod"> 客单 </span>
@@ -44,12 +44,6 @@
                       </p>
                     </div></el-col
                   >
-                  <el-col :span="12"
-                    ><div class="oldBoxConRight">
-                      <p>打印小票 Y</p>
-                      <p>退款退货 U</p>
-                    </div></el-col
-                  >
                 </el-row>
               </div>
             </el-card>
@@ -59,7 +53,12 @@
             class="selectShopingCon"
             :style="{ height: bodyHeight - 110 + 'px' }"
           >
-            <el-table :data="selectShopingList" style="width: 100%">
+            <el-table
+              :data="selectShopingList"
+              border
+              :row-class-name="tableRowClassName"
+              style="width: 100%"
+            >
               <el-table-column type="index" width="20"> </el-table-column>
               <el-table-column
                 prop="commodityTitle"
@@ -67,6 +66,11 @@
                 label="商品名"
                 min-width="150"
               >
+                <template slot-scope="scope">
+                  <span style="font-size: 32px">{{
+                    scope.row.commodityTitle
+                  }}</span>
+                </template>
               </el-table-column>
               <el-table-column label="数量" align="center" width="160">
                 <template slot-scope="scope">
@@ -78,18 +82,42 @@
                   ></el-input-number>
                 </template>
               </el-table-column>
-              <el-table-column align="center" prop="pic" label="价格（元）">
+              <el-table-column align="center" min-width="150" label="">
                 <template slot-scope="scope">
-                  <span style="color: #ff6014; font-size: 18px"
+                  <span style="color: #ff6014; font-size: 28px"
+                    >￥
+                    {{ scope.row.buyingPrice }}
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                align="center"
+                min-width="150"
+                label="零售价格（元）"
+              >
+                <template slot-scope="scope">
+                  <span style="color: #3f51b5; font-size: 32px"
+                    >￥
+                    {{ scope.row.retailPrice.toFixed(2) }}
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                align="center"
+                min-width="150"
+                label="小计（元）"
+              >
+                <template slot-scope="scope">
+                  <span style="color: #67c23a; font-size: 28px"
                     >￥
                     {{ (scope.row.retailPrice * scope.row.number).toFixed(2) }}
                   </span>
                 </template>
               </el-table-column>
-              <el-table-column align="center" label="操作" width="50">
+              <el-table-column align="center" label="操作" width="80">
                 <template slot-scope="scope">
                   <i
-                    class="el-icon-delete iconStyle"
+                    class="el-icon-delete iconStyle;font-size:20px"
                     @click="deleteShoping(scope.$index, selectShopingList)"
                   ></i>
                 </template>
@@ -127,7 +155,7 @@
                   <p>优惠：￥ {{ discount.toFixed(2) }}</p>
                   <p>
                     应收： <span style="color: #ff6014">￥</span>
-                    <span style="color: #ff6014; font-size: 22px">{{
+                    <span style="color: #ff6014; font-size: 32px">{{
                       addReceivablePic.toFixed(2)
                     }}</span>
                   </p>
@@ -137,11 +165,20 @@
           </div>
         </div>
         <div class="settlement">
-          <el-button type="primary">收款 Space</el-button>
-          <el-button type="success">现金 Z</el-button>
+          <!-- <el-button type="primary">收款 Space</el-button> -->
+          <el-button
+            type="success"
+            style="
+              width: 100%;
+              line-height: 40px;
+              margin-top: 20px;
+              font-size: 30px;
+            "
+            >收款 （ 快捷键 Z ）</el-button
+          >
         </div>
       </el-col>
-      <el-col :span="15">
+      <el-col :span="8" v-if="false">
         <div style="margin: 5px">
           <el-input
             placeholder="请输入条形码、商品名称进行查询！Tab"
@@ -165,7 +202,7 @@
         >
           <el-row :gutter="10">
             <el-col
-              :span="4"
+              :span="12"
               v-for="(item, stockIndex) in stockData"
               :key="stockIndex"
             >
@@ -457,6 +494,9 @@ export default {
     };
   },
   methods: {
+    tableRowClassName({ row, rowIndex }) {
+      return "tableLineHeight";
+    },
     upList() {
       this.getStockList();
       this.memberBox = false;
@@ -659,7 +699,7 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .dashboard {
   &-container {
     margin: 30px;
@@ -742,6 +782,7 @@ export default {
       border-left: 1px solid #e6e6e6;
       color: #3e5267;
       margin: 16px 0 0;
+      font-size: 32px;
     }
   }
   .selectShopingCon {
@@ -754,6 +795,18 @@ export default {
       color: red;
       font-size: 18px;
       cursor: pointer;
+    }
+    .el-table__header-wrapper th .cell {
+      font-size: 22px;
+    }
+    .el-table__header-wrapper th:nth-child(4) .cell {
+      color: rgb(255, 96, 20);
+    }
+    .el-table__header-wrapper th:nth-child(5) .cell {
+      color: rgb(63, 81, 181);
+    }
+    .el-table__header-wrapper th:nth-child(6) .cell {
+      color: #67c23a;
     }
   }
 }
@@ -830,6 +883,7 @@ export default {
 }
 .settlementCon {
   padding: 20px 25px;
+  font-size: 32px;
 }
 .settlementInput {
   border: 1px solid rgb(204, 203, 203);
@@ -840,5 +894,8 @@ export default {
   b {
     font-size: 24px;
   }
+}
+.tableLineHeight .cell {
+  line-height: 30px !important;
 }
 </style>

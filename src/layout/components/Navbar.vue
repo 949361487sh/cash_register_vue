@@ -40,13 +40,15 @@
       <el-col :span="4"
         ><div
           class="topNav"
-          @click="toPage('/onlineOrder/index')"
+          @click="toPage('暂未开通')"
           :class="navUrl == '/onlineOrder/index' ? 'onTopNav' : ''"
         >
           线上订单 F5
         </div></el-col
       >
-      <el-col :span="4"><div class="topNav">其他 F6</div></el-col>
+      <el-col @click="toPage('暂未开通')" :span="4"
+        ><div class="topNav">其他 F6</div></el-col
+      >
     </el-row>
   </div>
 </template>
@@ -75,6 +77,10 @@ export default {
   },
   methods: {
     toPage(url) {
+      if (url == "暂未开通") {
+        this.msgError("暂未开放此功能");
+        return;
+      }
       this.navUrl = url;
       this.$router.push({
         path: url,
