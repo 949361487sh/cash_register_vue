@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-row>
-      <el-col :span="24">
+      <el-col :span="16">
         <div class="selectCommodity" :style="{ height: bodyHeight + 'px' }">
           <div class="top">
             <span class="topName blod"> 客单 </span>
@@ -154,7 +154,8 @@
                 ><div class="bottomRight">
                   <p>优惠：￥ {{ discount.toFixed(2) }}</p>
                   <p>
-                    应收： <span style="color: #ff6014">￥</span>
+                    <span style="font-size: 28px">应收</span> ：
+                    <span style="color: #ff6014; font-size: 28px">￥</span>
                     <span style="color: #ff6014; font-size: 32px">{{
                       addReceivablePic.toFixed(2)
                     }}</span>
@@ -164,21 +165,12 @@
             </el-row>
           </div>
         </div>
-        <div class="settlement">
+        <div class="settlement" @click="shoukuan">
           <!-- <el-button type="primary">收款 Space</el-button> -->
-          <el-button
-            type="success"
-            style="
-              width: 100%;
-              line-height: 40px;
-              margin-top: 20px;
-              font-size: 30px;
-            "
-            >收款 （ 快捷键 Z ）</el-button
-          >
+          <div class="shoukuan">收款 （ 快捷键 Z 或者 空格键 ）</div>
         </div>
       </el-col>
-      <el-col :span="8" v-if="false">
+      <el-col :span="8" v-if="true">
         <div style="margin: 5px">
           <el-input
             placeholder="请输入条形码、商品名称进行查询！Tab"
@@ -494,6 +486,24 @@ export default {
     };
   },
   methods: {
+    shoukuan(key) {
+      const _this = this;
+      if (_this.memberBox) return;
+      if (_this.selectShopingList.length == 0) {
+        _this.msgInfo("请选择商品后结算");
+        return false;
+      }
+      _this.memberBox = true;
+      // 结算
+      _this.isTabMember = 3;
+      return;
+      if (key == "z") {
+        _this.isTabMember = 3;
+      } else {
+        _this.isTabMember = 2;
+        _this.voiceAnnouncements("商品金额" + _this.addReceivablePic + "元");
+      }
+    },
     tableRowClassName({ row, rowIndex }) {
       return "tableLineHeight";
     },
@@ -507,11 +517,12 @@ export default {
     },
     voiceAnnouncements(str) {
       console.log(str, "执行播放");
-      const msg = new SpeechSynthesisUtterance(str);
-      // msg.text = str;
-      // msg.rate = 1;
-      // msg.pitch = 2;
-      window.speechSynthesis.speak(msg);
+      let url =
+        "http://tts.baidu.com/text2audio?cuid=baike&lan=ZH&ctp=1&pdt=301&vol=9&rate=32&per=0&tex=" +
+        str;
+      let n = new Audio(url);
+      n.src = url;
+      n.play();
     },
     scanCode() {
       let code = "";
@@ -665,9 +676,9 @@ export default {
     _Enter_settlement(res) {
       console.log(res);
       console.log(this.inquiryGoods, "搜索值_Enter_settlement");
-      this.voiceAnnouncements(
-        `现金收款 ${this.receiptsPic} 元 ,找零${this.giveChange} 元。`
-      );
+      const lq =
+        this.giveChange > 0 ? ` ,找零${this.giveChange} 元。` : "请您扫码付款";
+      this.voiceAnnouncements(`现金收款 ${this.receiptsPic} 元${lq}`);
       this.oldOddNumbers = this.nowOderNumber;
       let commodityIds = [];
       this.selectShopingList.forEach((res) => {
@@ -782,7 +793,6 @@ export default {
       border-left: 1px solid #e6e6e6;
       color: #3e5267;
       margin: 16px 0 0;
-      font-size: 32px;
     }
   }
   .selectShopingCon {
@@ -879,7 +889,30 @@ export default {
   }
 }
 .settlement {
-  margin: 10px;
+  margin: 30px 10px 0;
+  .shoukuan {
+    width: 100%;
+    line-height: 40px;
+    font-size: 30px;
+    color: #fff;
+    background-color: #67c23a;
+    border-color: #67c23a;
+    display: inline-block;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid #dcdfe6;
+    -webkit-appearance: none;
+    text-align: center;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    outline: 0;
+    margin: 0;
+    -webkit-transition: 0.1s;
+    transition: 0.1s;
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 4px;
+  }
 }
 .settlementCon {
   padding: 20px 25px;

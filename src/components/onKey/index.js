@@ -52,21 +52,7 @@ export default {
         }
         // 打开收银结算弹框
         if (key == " " || key == "z") {
-          if (_this.memberBox) return;
-          if (_this.selectShopingList.length == 0) {
-            _this.msgInfo("请选择商品后结算");
-            return false;
-          }
-          _this.memberBox = true;
-          // 结算
-          if (key == "z") {
-            _this.isTabMember = 3;
-          } else {
-            _this.isTabMember = 2;
-            _this.voiceAnnouncements(
-              "商品金额" + _this.addReceivablePic + "元"
-            );
-          }
+          _this.shoukuan(key);
         }
       }
       // 收银首页 end
