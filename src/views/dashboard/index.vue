@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-row>
-      <el-col :span="16">
+      <el-col :span="isguding ? 16 : 23">
         <div class="selectCommodity" :style="{ height: bodyHeight + 'px' }">
           <div class="top">
             <span class="topName blod"> 客单 </span>
@@ -170,8 +170,8 @@
           <div class="shoukuan">收款 （ 快捷键 Z 或者 空格键 ）</div>
         </div>
       </el-col>
-      <el-col :span="8" v-if="true">
-        <div style="margin: 5px">
+      <el-col :span="isguding ? 8 : 1">
+        <div v-show="isguding" style="margin: 5px">
           <el-input
             placeholder="请输入条形码、商品名称进行查询！Tab"
             v-model="inquiryGoods"
@@ -192,7 +192,10 @@
           class="goodsDetail"
           :style="{ height: this.bodyHeight + 40 + 'px' }"
         >
-          <el-row :gutter="10">
+          <div class="guding" @click="guding">
+            {{ isguding ? "隐藏" : "显示" }}
+          </div>
+          <el-row v-show="isguding" :gutter="10">
             <el-col
               :span="12"
               v-for="(item, stockIndex) in stockData"
@@ -457,6 +460,7 @@ export default {
   },
   data() {
     return {
+      isguding: false,
       nowOderNumber: 0,
       receiptsPic: 0, // 实收金额
       isTabMember: 0, // 0=查询会员 1=新增会员 2=结算 3=现金结算
@@ -673,6 +677,9 @@ export default {
           this.memberFrom = {};
         });
     },
+    guding() {
+      this.isguding = this.isguding ? false : true;
+    },
     _Enter_settlement(res) {
       console.log(res);
       console.log(this.inquiryGoods, "搜索值_Enter_settlement");
@@ -822,7 +829,22 @@ export default {
 }
 
 .goodsDetail {
+  position: relative;
   overflow: scroll;
+  .guding {
+    position: absolute;
+    height: 70px;
+    width: 30px;
+    background-color: #ff6014;
+    z-index: 999;
+    top: 45%;
+    margin-top: -25px;
+    padding: 9px 6px 0px;
+    color: #fff;
+    font-size: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
   ::-webkit-scrollbar {
     /*滚动条整体样式*/
     width: 10px; /*高宽分别对应横竖滚动条的尺寸*/

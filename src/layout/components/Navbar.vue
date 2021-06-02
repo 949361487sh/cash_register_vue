@@ -43,7 +43,7 @@
           @click="toPage('暂未开通')"
           :class="navUrl == '/onlineOrder/index' ? 'onTopNav' : ''"
         >
-          线上订单 F5
+          生成条形码 F5
         </div></el-col
       >
       <el-col @click="toPage('暂未开通')" :span="4"
